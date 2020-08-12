@@ -3,10 +3,18 @@
 //
 // Copyright (C) 2003-2008 Matthias Christian Schabel
 // Copyright (C) 2007-2008 Steven Watanabe
+// Copyright (C) 2020 code::lab Mateusz Janiak
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
+
+
+//! Decides whether scalar op quantity, or quantity op scalar operations are allowed
+#define BOOST_UNITS_ALLOW_SCALAR_QUANTITY_OPERATIONS
+//! Decides about resulting quantity storage type for quantity scalar operations
+//#define BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+
 
 #ifndef BOOST_UNITS_QUANTITY_HPP
 #define BOOST_UNITS_QUANTITY_HPP
@@ -939,113 +947,105 @@ operator/(const Y& lhs,const unit<Dim,System>&)
     return type::from_value(lhs);
 }
 
-///// runtime quantity times scalar
-//template<class Unit,
-//         class X,
-//         class Y>
-//inline
-//BOOST_CONSTEXPR
-//typename multiply_typeof_helper< quantity<Unit,X>,Y >::type
-//operator*(const quantity<Unit,X>& lhs,const Y& rhs)
-//{
-//    typedef typename multiply_typeof_helper< quantity<Unit,X>,Y >::type type;
-//    
-//    return type::from_value(lhs.value()*rhs);
-//}
-//
-///// runtime scalar times quantity
-//template<class Unit,
-//         class X,
-//         class Y>
-//inline
-//BOOST_CONSTEXPR
-//typename multiply_typeof_helper< X,quantity<Unit,Y> >::type
-//operator*(const X& lhs,const quantity<Unit,Y>& rhs)
-//{
-//    typedef typename multiply_typeof_helper< X,quantity<Unit,Y> >::type type;
-//    
-//    return type::from_value(lhs*rhs.value());
-//}
+#ifdef BOOST_UNITS_ALLOW_SCALAR_QUANTITY_OPERATIONS
 
-/// runtime quantity times scalar
-template<class Unit,
-         class X>
-inline
-BOOST_CONSTEXPR
-typename multiply_typeof_helper< quantity<Unit,X>,X >::type
-operator*(const quantity<Unit,X>& lhs,const X& rhs)
-{
-    typedef typename multiply_typeof_helper< quantity<Unit,X>,X >::type type;
+	/// runtime quantity times scalar
+	template<class Unit,
+			 class X,
+			 class Y>
+	inline
+	BOOST_CONSTEXPR
+
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		quantity<Unit, X>
+#else
+		typename multiply_typeof_helper< quantity<Unit,X>,Y >::type
+#endif
+
+	operator*(const quantity<Unit,X>& lhs,const Y& rhs)
+	{
+
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		typedef quantity<Unit, X> type;
+#else
+		typedef typename multiply_typeof_helper< quantity<Unit, X>, Y >::type type;
+#endif
     
-    return type::from_value(lhs.value()*rhs);
-}
+		return type::from_value(lhs.value()*rhs);
+	}
 
-/// runtime scalar times quantity
-template<class Unit,
-         class X>
-inline
-BOOST_CONSTEXPR
-typename multiply_typeof_helper< X,quantity<Unit,X> >::type
-operator*(const X& lhs,const quantity<Unit,X>& rhs)
-{
-    typedef typename multiply_typeof_helper< X,quantity<Unit,X> >::type type;
+	/// runtime scalar times quantity
+	template<class Unit,
+			 class X,
+			 class Y>
+	inline
+	BOOST_CONSTEXPR
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		quantity<Unit, Y>
+#else
+	typename multiply_typeof_helper< X,quantity<Unit,Y> >::type
+#endif
+
+	operator*(const X& lhs,const quantity<Unit,Y>& rhs)
+	{
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		typedef quantity<Unit, Y> type;
+#else
+		typedef typename multiply_typeof_helper< X,quantity<Unit,Y> >::type type;
+#endif
     
-    return type::from_value(lhs*rhs.value());
-}
+		return type::from_value(lhs*rhs.value());
+	}
 
-///// runtime quantity divided by scalar
-//template<class Unit,
-//         class X,
-//         class Y>
-//inline
-//BOOST_CONSTEXPR
-//typename divide_typeof_helper< quantity<Unit,X>,Y >::type
-//operator/(const quantity<Unit,X>& lhs,const Y& rhs)
-//{
-//    typedef typename divide_typeof_helper< quantity<Unit,X>,Y >::type   type;
-//    
-//    return type::from_value(lhs.value()/rhs);
-//}
-//
-///// runtime scalar divided by quantity
-//template<class Unit,
-//         class X,
-//         class Y>
-//inline
-//BOOST_CONSTEXPR
-//typename divide_typeof_helper< X,quantity<Unit,Y> >::type
-//operator/(const X& lhs,const quantity<Unit,Y>& rhs)
-//{
-//    typedef typename divide_typeof_helper< X,quantity<Unit,Y> >::type   type;
-//    
-//    return type::from_value(lhs/rhs.value());
-//}
+	/// runtime quantity divided by scalar
+	template<class Unit,
+			 class X,
+			 class Y>
+	inline
+	BOOST_CONSTEXPR
 
-/// runtime quantity divided by scalar
-template<class Unit,
-         class X>
-inline
-BOOST_CONSTEXPR
-typename divide_typeof_helper< quantity<Unit,X>,X >::type
-operator/(const quantity<Unit,X>& lhs,const X& rhs)
-{
-    typedef typename divide_typeof_helper< quantity<Unit,X>,X >::type   type;
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		quantity<Unit, X>
+#else
+	typename divide_typeof_helper< quantity<Unit,X>,Y >::type
+#endif
+
+	operator/(const quantity<Unit,X>& lhs,const Y& rhs)
+	{
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		typedef quantity<Unit, X> type;
+#else
+		typedef typename divide_typeof_helper< quantity<Unit,X>,Y >::type   type;
+#endif
     
-    return type::from_value(lhs.value()/rhs);
-}
+		return type::from_value(lhs.value()/rhs);
+	}
 
-/// runtime scalar divided by quantity
-template<class Unit,
-         class X>
-inline
-BOOST_CONSTEXPR
-typename divide_typeof_helper< X,quantity<Unit,X> >::type
-operator/(const X& lhs,const quantity<Unit,X>& rhs)
-{
-    typedef typename divide_typeof_helper< X,quantity<Unit,X> >::type   type;
+	/// runtime scalar divided by quantity
+	template<class Unit,
+			 class X,
+			 class Y>
+	inline
+	BOOST_CONSTEXPR
+
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		quantity<Unit, Y>
+#else
+	typename divide_typeof_helper< X,quantity<Unit,Y> >::type
+#endif
+
+	operator/(const X& lhs,const quantity<Unit,Y>& rhs)
+	{
+#ifdef BOOST_UNITS_FORCE_QUANTITY_TYPE_WITH_SCALARS
+		typedef quantity<Unit, Y> type;
+#else
+		typedef typename divide_typeof_helper< X,quantity<Unit,Y> >::type   type;
+#endif
     
-    return type::from_value(lhs/rhs.value());
-}
+		return type::from_value(lhs/rhs.value());
+	}
+
+#endif //BOOST_UNITS_ALLOW_SCALAR_QUANTITY_OPERATIONS
 
 /// runtime unit times quantity
 template<class System1,
